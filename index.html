@@ -7,6 +7,111 @@
 <body>
 
     <script>
+    const currentPlanetX = 300;
+    const currentPlanetY = 500;
+    const leftPlanetX = 650;
+    const leftPlanetY = 200;
+    const rightPlanetX = 800;
+    const rightPlanetY = 400;
+    const planetNames = ["Mercury", "Venus", "Mars", "Earth", "Jupiter", "Pluto", "Saturn", "Neptune", "Uranus"];
+    const planetImages = ["PlanetA", "PlanetB", "PlanetC"];
+
+    var SpaceScene = new Phaser.Class({
+      Extends: Phaser.Scene,
+
+      initialize: function SpaceScene () {
+        Phaser.Scene.call(this, {key: 'SpaceScene' });
+      },
+
+      preload: function ()
+      {
+          this.load.image('ship', 'assets/sprites/ship.png');
+          this.load.image('PlanetA', 'assets/sprites/Planet_A.png');
+          this.load.image('PlanetB', 'assets/sprites/Planet_B.png');
+          this.load.image('PlanetC', 'assets/sprites/Planet_C.png');
+      },
+
+      create: function ()
+      {
+        this.consoleText;
+        this.currentPlanet, this.leftPlanet, this.rightPlanet, this.leftline, this.rightline;
+        this.playerShip;
+
+        this.playerShip = this.add.sprite(currentPlanetX - 16, currentPlanetY - 16, 'ship').setOrigin(0, 0);
+        this.rotatePlayerShip("rest");
+
+        this.createGalaxy();
+        this.currentPlanet = this.generatePlanet(currentPlanetX, currentPlanetY);
+      	this.consoleText = this.add.text(16, 16,
+      		"Place holder",
+    	  	{fontSize: '30px', fill: '#ffffff'}
+      	);
+      },
+
+      rotatePlayerShip: function (position) {
+        const leftAngle = Math.atan2(currentPlanetY - leftPlanetY, leftPlanetX - currentPlanetX) * 180 / Math.PI;
+        const rightAngle = Math.atan2(currentPlanetY - rightPlanetY, rightPlanetX - currentPlanetY) * 180 / Math.PI;
+        let angle = (position === "rest" ? 0 : (position === "left" ? 90 - leftAngle : 90 - rightAngle));
+        this.playerShip.angle = angle;
+        this.playerShip.depth = 10;
+      },
+
+      createGalaxy: function () {
+        this.drawLines();
+
+        this.leftPlanet = this.generatePlanet(leftPlanetX, leftPlanetY);
+        this.rightPlanet = this.generatePlanet(rightPlanetX, rightPlanetY);
+      },
+
+      drawLines: function () {
+        this.leftline = this.add.line(0, 0, currentPlanetX, currentPlanetY, leftPlanetX, leftPlanetY, 0xffff00).setOrigin(0,0);
+        this.rightline = this.add.line(0, 0, currentPlanetX, currentPlanetY, rightPlanetX, rightPlanetY, 0xffff00).setOrigin(0,0);
+        this.leftline.depth = -1;
+        this.rightline.depth = -1;
+      },
+
+      generatePlanet: function (x, y) {
+        var planet = this.add.image(x, y, planetImages[Math.floor(Math.random()*planetImages.length)]);
+        planet.setInteractive();
+
+        planet.on('pointerdown', () => {
+          let planetName = "Planet " + planetNames[Math.floor(Math.random()*planetNames.length)];
+
+          let x_offset = (x === leftPlanetX) ? leftPlanetX - currentPlanetX : rightPlanetX - currentPlanetX;
+          let y_offset = (y === leftPlanetY) ? currentPlanetY - leftPlanetY : currentPlanetY - rightPlanetY;
+
+          if (planet != this.currentPlanet) {
+            this.leftline.destroy();
+            this.rightline.destroy();
+            (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
+
+            this.tweens.add({
+              targets: [this.currentPlanet, this.leftPlanet, this.rightPlanet],
+              x: "-=" + x_offset,
+              y: "+=" + y_offset,
+              duration: 3000,
+              onComplete: () => {
+                this.currentPlanet.destroy();
+                this.currentPlanet = planet;
+                (x === leftPlanetX) ? this.rightPlanet.destroy() : this.leftPlanet.destroy();
+                this.createGalaxy();
+                this.rotatePlayerShip("rest");
+              },
+            });
+          }
+        });
+
+        this.tweens.add({
+          targets: planet,
+          angle: 360,
+          duration: 6000,
+          repeat: -1,
+        });
+
+        return planet;
+       },
+    });
+
     var config = {
         type: Phaser.AUTO,
         width: 1200,
@@ -15,106 +120,10 @@
         physics: {
             default: 'arcade',
         },
-        scene: {
-            preload: preload,
-            create: create
-        }
+        scene: [SpaceScene]
     };
 
     var game = new Phaser.Game(config);
-    var consoleText;
-    var currentPlanet, leftPlanet, rightPlanet, leftline, rightline;
-    var playerShip;
-    const currentPlanetX = 300;
-    const currentPlanetY = 500;
-    const leftPlanetX = 650;
-    const leftPlanetY = 200;
-    const rightPlanetX = 800;
-    const rightPlanetY = 400;
-
-    function preload ()
-    {
-        this.load.image('ship', 'assets/sprites/ship.png');
-    }
-
-    function create ()
-    {
-      createGalaxy(this);
-      currentPlanet = generatePlanet(currentPlanetX, currentPlanetY, this);
-    	consoleText = this.add.text(16, 16,
-    		"Place holder",
-  	  	{fontSize: '30px', fill: '#ffffff'}
-    	);
-
-      playerShip = this.add.sprite(currentPlanetX - 16, currentPlanetY - 16, 'ship').setOrigin(0, 0);
-      rotatePlayerShip(this, "rest");
-    }
-
-    function rotatePlayerShip(scene, position) {
-      const leftAngle = Math.atan2(currentPlanetY - leftPlanetY, leftPlanetX - currentPlanetX) * 180 / Math.PI;
-      const rightAngle = Math.atan2(currentPlanetY - rightPlanetY, rightPlanetX - currentPlanetY) * 180 / Math.PI;
-      let angle = (position === "rest" ? 0 : (position === "left" ? 90 - leftAngle : 90 - rightAngle));
-      playerShip.angle = angle;
-      playerShip.depth = 10;
-    }
-
-    function createGalaxy(scene) {
-      drawLines(scene);
-
-      leftPlanet = generatePlanet(leftPlanetX, leftPlanetY, scene);
-      rightPlanet = generatePlanet(rightPlanetX, rightPlanetY, scene);
-    }
-
-    function drawLines(scene) {
-      leftline = scene.add.line(0, 0, currentPlanetX, currentPlanetY, leftPlanetX, leftPlanetY, 0xffff00).setOrigin(0,0);
-      rightline = scene.add.line(0, 0, currentPlanetX, currentPlanetY, rightPlanetX, rightPlanetY, 0xffff00).setOrigin(0,0);
-      leftline.depth = -1;
-      rightline.depth = -1;
-    }
-
-    function generatePlanet(x, y, scene) {
-      let color = (Math.random() > 0.5 ? (Math.random() > 0.5 ? 0xff0000 : 0x00ff00) : 0x0000ff);
-      let planetName = "Planet " + Math.random().toString(36).slice(7);
-
-      var planet = scene.add.circle(x, y, 60, color );
-      planet.setIterations( 0.2 );
-      planet.setInteractive();
-
-      let x_offset = (x === leftPlanetX) ? leftPlanetX - currentPlanetX : rightPlanetX - currentPlanetX;
-      let y_offset = (y === leftPlanetY) ? currentPlanetY - leftPlanetY : currentPlanetY - rightPlanetY;
-
-      planet.on('pointerdown', () => {
-        consoleText.setText(planetName);
-
-        if (planet != currentPlanet) {
-          leftline.destroy();
-          rightline.destroy();
-          (x === leftPlanetX) ? rotatePlayerShip(scene, "left") : rotatePlayerShip(scene, "right");
-          scene.tweens.add({
-            targets: [currentPlanet, leftPlanet, rightPlanet],
-            x: "-=" + x_offset,
-            y: "+=" + y_offset,
-            duration: 3000,
-            onComplete: () => {
-              currentPlanet.destroy();
-              currentPlanet = planet;
-              (x === leftPlanetX) ? rightPlanet.destroy() : leftPlanet.destroy();
-              createGalaxy(scene);
-              rotatePlayerShip(scene, "rest");
-              },
-          });
-        }
-      });
-
-      scene.tweens.add({
-        targets: planet,
-        angle: 360,
-        duration: 6000,
-        repeat: -1,
-      });
-
-      return planet;
-    }
     </script>
 
 </body>
