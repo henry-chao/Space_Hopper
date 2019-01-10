@@ -51,7 +51,9 @@
     }
 
     function rotatePlayerShip(scene, position) {
-      let angle = (position === "rest" ? 0 : (position === "left" ? 43 : 65));
+      const leftAngle = Math.atan2(currentPlanetY - leftPlanetY, leftPlanetX - currentPlanetX) * 180 / Math.PI;
+      const rightAngle = Math.atan2(currentPlanetY - rightPlanetY, rightPlanetX - currentPlanetY) * 180 / Math.PI;
+      let angle = (position === "rest" ? 0 : (position === "left" ? 90 - leftAngle : 90 - rightAngle));
       playerShip.angle = angle;
       playerShip.depth = 10;
     }
