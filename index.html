@@ -9,8 +9,8 @@
     <script>
     var config = {
         type: Phaser.AUTO,
-        width: 800,
-        height: 600,
+        width: 1200,
+        height: 800,
 	      canvasStyle: "display: block; margin-left: auto; margin-right: auto;",
         physics: {
             default: 'arcade',
@@ -24,16 +24,17 @@
     var game = new Phaser.Game(config);
     var consoleText;
     var currentPlanet, leftPlanet, rightPlanet, leftline, rightline;
-    const currentPlanetX = 200;
+    var playerShip;
+    const currentPlanetX = 300;
     const currentPlanetY = 500;
-    const leftPlanetX = 450;
+    const leftPlanetX = 650;
     const leftPlanetY = 200;
-    const rightPlanetX = 600;
+    const rightPlanetX = 800;
     const rightPlanetY = 400;
 
     function preload ()
     {
-        //this.load.image('sky', 'assets/skies/space3.png');
+        this.load.image('ship', 'assets/sprites/ship.png');
     }
 
     function create ()
@@ -44,6 +45,15 @@
     		"Place holder",
   	  	{fontSize: '30px', fill: '#ffffff'}
     	);
+
+      playerShip = this.add.sprite(currentPlanetX - 16, currentPlanetY - 16, 'ship').setOrigin(0, 0);
+      rotatePlayerShip(this, "rest");
+    }
+
+    function rotatePlayerShip(scene, position) {
+      let angle = (position === "rest" ? 0 : (position === "left" ? 43 : 65));
+      playerShip.angle = angle;
+      playerShip.depth = 10;
     }
 
     function createGalaxy(scene) {
@@ -77,6 +87,7 @@
         if (planet != currentPlanet) {
           leftline.destroy();
           rightline.destroy();
+          (x === leftPlanetX) ? rotatePlayerShip(scene, "left") : rotatePlayerShip(scene, "right");
           scene.tweens.add({
             targets: [currentPlanet, leftPlanet, rightPlanet],
             x: "-=" + x_offset,
@@ -87,6 +98,7 @@
               currentPlanet = planet;
               (x === leftPlanetX) ? rightPlanet.destroy() : leftPlanet.destroy();
               createGalaxy(scene);
+              rotatePlayerShip(scene, "rest");
               },
           });
         }
