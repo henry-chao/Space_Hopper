@@ -118,6 +118,9 @@
           if (planet != this.currentPlanet) {
             this.planetIndicator.setText(planetName);
 
+            this.fuelCount -= 1;
+            this.fuelIndicator.setText(this.displayFuel());
+
             this.leftline.destroy();
             this.rightline.destroy();
             (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
@@ -131,8 +134,7 @@
                 this.currentPlanet.destroy();
                 this.currentPlanet = planet;
                 (x === leftPlanetX) ? this.rightPlanet.destroy() : this.leftPlanet.destroy();
-                this.createGalaxy();
-                this.rotatePlayerShip("rest");
+                this.planetScenario();
               },
             });
           }
@@ -146,7 +148,27 @@
         });
 
         return planet;
-       },
+      },
+
+      planetScenario: function() {
+        var scenarioDisplay = this.add.text(700, 200,
+          "You visited the planet!",
+          {fontSize: '30px', fill: '#ffffff'}
+        );
+
+        var selection = this.add.text(700, 400,
+          "Thanks!",
+          {fontSize: '30px', fill: '#ffffff'}
+        );
+
+        selection.setInteractive();
+        selection.on('pointerdown', () => {
+          scenarioDisplay.destroy();
+          selection.destroy();
+          this.createGalaxy();
+          this.rotatePlayerShip("rest");
+        });
+      },
     });
 
     var config = {
