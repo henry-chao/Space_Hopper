@@ -7,10 +7,13 @@ var SpaceScene = new Phaser.Class({
 
   preload: function ()
   {
-      this.load.image('ship', 'assets/sprites/ship.png');
-      this.load.image('PlanetA', 'assets/sprites/Planet_A.png');
-      this.load.image('PlanetB', 'assets/sprites/Planet_B.png');
-      this.load.image('PlanetC', 'assets/sprites/Planet_C.png');
+    this.load.image('ship', 'assets/sprites/ship.png');
+    this.load.image('PlanetA', 'assets/sprites/Planet_A.png');
+    this.load.image('PlanetB', 'assets/sprites/Planet_B.png');
+    this.load.image('PlanetC', 'assets/sprites/Planet_C.png');
+    this.load.image('PlanetIndicator', 'assets/sprites/PlanetIndicator.png');
+    this.load.image('ResourcesIndicator', 'assets/sprites/ResourcesIndicator.png');
+    this.load.image('SelectionIndicator', 'assets/sprites/SelectionIndicator.png');
   },
 
   create: function ()
@@ -33,21 +36,26 @@ var SpaceScene = new Phaser.Class({
     this.createGalaxy();
     this.currentPlanet = this.generatePlanet(currentPlanetX, currentPlanetY);
 
+    this.planetIndicatorBG = this.add.image(0, 0, 'PlanetIndicator').setOrigin(0,0);
   	this.planetIndicator = this.add.text(16, 16,
   		"Planet Earth",
-	  	{fontSize: '30px', fill: '#ffffff'}
+	  	{fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
   	);
-    this.fuelIndicator = this.add.text(16, 740,
+
+    this.fuelIndicatorBG = this.add.image(20, 735, 'ResourcesIndicator').setOrigin(0,0);
+    this.fuelIndicator = this.add.text(40, 750,
       this.displayFuel(),
-      {fontSize: '30px', fill: '#ffffff'}
+      {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
     );
-    this.cargoIndicator = this.add.text(260, 740,
+    this.cargoIndicatorBG = this.add.image(290, 735, 'ResourcesIndicator').setOrigin(0,0);
+    this.cargoIndicator = this.add.text(310, 750,
       this.displayCargo(),
-      {fontSize: '30px', fill: '#ffffff'}
+      {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
     );
-    this.moneyIndicator = this.add.text(556, 740,
+    this.cargoIndicatorBG = this.add.image(560, 735, 'ResourcesIndicator').setOrigin(0,0);
+    this.moneyIndicator = this.add.text(580, 750,
       this.displayMoney(),
-      {fontSize: '30px', fill: '#ffffff'}
+      {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
     );
   },
 
@@ -144,32 +152,34 @@ var SpaceScene = new Phaser.Class({
     const sellCargoAmount = Phaser.Math.RND.integerInRange(1, 50);
     const sellCargoCost = Phaser.Math.RND.integerInRange(15, 75);
 
-    this.scenarioDisplay = this.add.text(700, 200,
-      "You visited the planet!",
-      {fontSize: '30px', fill: '#ffffff'}
+    const fontConf = {fontFamily: 'Orbitron', fontSize: '20px', fill: '#ffffff'};
+
+    this.scenarioDisplay = this.add.text(700, 100,
+      "You visited the planet!", fontConf
     );
 
-    this.selectionBuyFuel = this.add.text(700, 400,
-      "Buy fuel (" + fuelAmount + "): $" + fuelAmount * fuelCost,
-      {fontSize: '30px', fill: '#ffffff'}
-    ).setInteractive();
+    this.selectionBuyFuel = this.add.image(650, 250, 'SelectionIndicator').setOrigin(0,0).setInteractive();
+    this.selectionBuyFuelText = this.add.text(670, 265,
+      "Buy fuel (" + fuelAmount + "): $" + fuelAmount * fuelCost, fontConf
+    );
 
-    this.selectionBuyCargo = this.add.text(700, 450,
-      "Buy Cargo (" + buyCargoAmount + "): $" + buyCargoAmount * buyCargoCost,
-      {fontSize: '30px', fill: '#ffffff'}
-    ).setInteractive();
+    this.selectionBuyCargo = this.add.image(650, 350, 'SelectionIndicator').setOrigin(0,0).setInteractive();
+    this.selectionBuyCargoText = this.add.text(670, 365,
+      "Buy Cargo (" + buyCargoAmount + "): $" + buyCargoAmount * buyCargoCost, fontConf
+    );
 
-    this.selectionSellCargo = this.add.text(700, 500,
-      "Sell Cargo (" + sellCargoAmount + "): $" + sellCargoAmount * sellCargoCost,
-      {fontSize: '30px', fill: '#ffffff'}
-    ).setInteractive();
-    this.selectionNothing = this.add.text(700, 550,
-      "Skip action",
-      {fontSize: '30px', fill: '#ffffff'}
-    ).setInteractive();
-    this.selectionError = this.add.text(700, 600,
-      "",
-      {fontSize: '30px', fill: '#ff0000'}
+    this.selectionSellCargo = this.add.image(650, 450, 'SelectionIndicator').setOrigin(0,0).setInteractive();
+    this.selectionSellCargoText = this.add.text(670, 465,
+      "Sell Cargo (" + sellCargoAmount + "): $" + sellCargoAmount * sellCargoCost, fontConf
+    );
+
+    this.selectionNothing = this.add.image(650, 550, 'SelectionIndicator').setOrigin(0,0).setInteractive();
+    this.selectionNothingText = this.add.text(670, 565,
+      "Skip action", fontConf
+    );
+
+    this.selectionError = this.add.text(670, 670,
+      "", {fontFamily: 'Orbitron', fontSize: '20px', fill: '#ff0000'}
     );
 
     this.selectionBuyFuel.on('pointerdown', () => {
@@ -223,9 +233,13 @@ var SpaceScene = new Phaser.Class({
       this.updateIndicator();
       this.scenarioDisplay.destroy();
       this.selectionBuyFuel.destroy();
+      this.selectionBuyFuelText.destroy();
       this.selectionBuyCargo.destroy();
+      this.selectionBuyCargoText.destroy();
       this.selectionSellCargo.destroy();
+      this.selectionSellCargoText.destroy();
       this.selectionNothing.destroy();
+      this.selectionNothingText.destroy();
       this.selectionError.destroy();
       this.createGalaxy();
       this.rotatePlayerShip("rest");
