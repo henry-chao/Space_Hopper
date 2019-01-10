@@ -137,6 +137,13 @@ var SpaceScene = new Phaser.Class({
   },
 
   planetScenario: function() {
+    const fuelAmount = Phaser.Math.RND.integerInRange(1, 5);
+    const fuelCost = Phaser.Math.RND.integerInRange(100, 350);
+    const buyCargoAmount = Phaser.Math.RND.integerInRange(10, 30);
+    const buyCargoCost = Phaser.Math.RND.integerInRange(20, 45);
+    const sellCargoAmount = Phaser.Math.RND.integerInRange(1, 50);
+    const sellCargoCost = Phaser.Math.RND.integerInRange(15, 75);
+
     this.scenarioDisplay = this.add.text(700, 200,
       "You visited the planet!",
       {fontSize: '30px', fill: '#ffffff'}
@@ -206,14 +213,22 @@ var SpaceScene = new Phaser.Class({
   },
 
   postScenario: function() {
-    this.updateIndicator();
-    this.scenarioDisplay.destroy();
-    this.selectionBuyFuel.destroy();
-    this.selectionBuyCargo.destroy();
-    this.selectionSellCargo.destroy();
-    this.selectionNothing.destroy();
-    this.selectionError.destroy();
-    this.createGalaxy();
-    this.rotatePlayerShip("rest");
+    if( this.moneyCount === 0 || this.fuelCount === 0){
+      this.scene.stop('SpaceScene');
+      this.scene.start('FailScene');
+    } else if (this.moneyCount >= 8000){
+      this.scene.stop('SpaceScene');
+      this.scene.start('WinScene');
+    } else {  
+      this.updateIndicator();
+      this.scenarioDisplay.destroy();
+      this.selectionBuyFuel.destroy();
+      this.selectionBuyCargo.destroy();
+      this.selectionSellCargo.destroy();
+      this.selectionNothing.destroy();
+      this.selectionError.destroy();
+      this.createGalaxy();
+      this.rotatePlayerShip("rest");
+    }
   },
 });
