@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/js/phaser.min.js"></script>
+    <title>Space Hopper</title>
+</head>
+<body>
+
+    <script>
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+	      canvasStyle: "display: block; margin-left: auto; margin-right: auto;",
+        physics: {
+            default: 'arcade',
+        },
+        scene: {
+            preload: preload,
+            create: create
+        }
+    };
+
+    var game = new Phaser.Game(config);
+    var consoleText;
+    var currentPlanet, leftPlanet, rightPlanet, leftline, rightline;
+    const currentPlanetX = 200;
+    const currentPlanetY = 500;
+    const leftPlanetX = 450;
+    const leftPlanetY = 200;
+    const rightPlanetX = 600;
+    const rightPlanetY = 400;
+
+    function preload ()
+    {
+        //this.load.image('sky', 'assets/skies/space3.png');
+    }
+
+    function create ()
+    {
+      createGalaxy(this);
+      currentPlanet = generatePlanet(currentPlanetX, currentPlanetY, this);
+    	consoleText = this.add.text(16, 16,
+    		"Place holder",
+  	  	{fontSize: '30px', fill: '#ffffff'}
+    	);
+    }
+
+    function createGalaxy(scene) {
+      drawLines(scene);
+
+      leftPlanet = generatePlanet(leftPlanetX, leftPlanetY, scene);
+      rightPlanet = generatePlanet(rightPlanetX, rightPlanetY, scene);
+    }
+
+    function drawLines(scene) {
+      leftline = scene.add.line(0, 0, currentPlanetX, currentPlanetY, leftPlanetX, leftPlanetY, 0xffff00).setOrigin(0,0);
+      rightline = scene.add.line(0, 0, currentPlanetX, currentPlanetY, rightPlanetX, rightPlanetY, 0xffff00).setOrigin(0,0);
+      leftline.depth = -1;
+      rightline.depth = -1;
+    }
+
+    function generatePlanet(x, y, scene) {
+      let color = (Math.random() > 0.5 ? (Math.random() > 0.5 ? 0xff0000 : 0x00ff00) : 0x0000ff);
+      let planetName = "Planet " + Math.random().toString(36).slice(7);
+
+      var planet = scene.add.circle(x, y, 60, color );
+      planet.setIterations( 0.2 );
+      planet.setInteractive();
+
+      let x_offset = (x === leftPlanetX) ? leftPlanetX - currentPlanetX : rightPlanetX - currentPlanetX;
+      let y_offset = (y === leftPlanetY) ? currentPlanetY - leftPlanetY : currentPlanetY - rightPlanetY;
+
+      planet.on('pointerdown', () => {
+        consoleText.setText(planetName);
+
+        if (planet != currentPlanet) {
+          leftline.destroy();
+          rightline.destroy();
+          scene.tweens.add({
+            targets: [currentPlanet, leftPlanet, rightPlanet],
+            x: "-=" + x_offset,
+            y: "+=" + y_offset,
+            duration: 3000,
+            onComplete: () => {
+              currentPlanet.destroy();
+              currentPlanet = planet;
+              (x === leftPlanetX) ? rightPlanet.destroy() : leftPlanet.destroy();
+              createGalaxy(scene);
+              },
+          });
+        }
+      });
+
+      scene.tweens.add({
+        targets: planet,
+        angle: 360,
+        duration: 6000,
+        repeat: -1,
+      });
+
+      return planet;
+    }
+    </script>
+
+</body>
+</html>
