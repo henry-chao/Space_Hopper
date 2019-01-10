@@ -13,6 +13,8 @@
     const leftPlanetY = 200;
     const rightPlanetX = 800;
     const rightPlanetY = 400;
+    const fuelMax = 20;
+    const cargoMax = 150;
     const planetNames = ["Mercury", "Venus", "Mars", "Earth", "Jupiter", "Pluto", "Saturn", "Neptune", "Uranus"];
     const planetImages = ["PlanetA", "PlanetB", "PlanetC"];
 
@@ -33,7 +35,15 @@
 
       create: function ()
       {
-        this.consoleText;
+        this.planetIndicator;
+        this.fuelIndicator;
+        this.cargoIndicator;
+        this.moneyIndicator;
+
+        this.fuelCount = 20;
+        this.cargoCount = 0;
+        this.moneyCount = 1500;
+
         this.currentPlanet, this.leftPlanet, this.rightPlanet, this.leftline, this.rightline;
         this.playerShip;
 
@@ -42,10 +52,35 @@
 
         this.createGalaxy();
         this.currentPlanet = this.generatePlanet(currentPlanetX, currentPlanetY);
-      	this.consoleText = this.add.text(16, 16,
-      		"Place holder",
+
+      	this.planetIndicator = this.add.text(16, 16,
+      		"Planet Earth",
     	  	{fontSize: '30px', fill: '#ffffff'}
       	);
+        this.fuelIndicator = this.add.text(16, 740,
+          this.displayFuel(),
+          {fontSize: '30px', fill: '#ffffff'}
+        );
+        this.cargoIndicator = this.add.text(260, 740,
+          this.displayCargo(),
+          {fontSize: '30px', fill: '#ffffff'}
+        );
+        this.moneyIndicator = this.add.text(556, 740,
+          this.displayMoney(),
+          {fontSize: '30px', fill: '#ffffff'}
+        );
+      },
+
+      displayFuel: function() {
+        return "Fuel: " + this.fuelCount + "/" + fuelMax;
+      },
+
+      displayCargo: function() {
+        return "Cargo: " + this.cargoCount + "/" + cargoMax;
+      },
+
+      displayMoney: function() {
+        return "Money: $" + this.moneyCount;
       },
 
       rotatePlayerShip: function (position) {
@@ -71,16 +106,18 @@
       },
 
       generatePlanet: function (x, y) {
-        var planet = this.add.image(x, y, planetImages[Math.floor(Math.random()*planetImages.length)]);
+        var planet = this.add.image(x, y, Phaser.Math.RND.pick(planetImages));
         planet.setInteractive();
 
         planet.on('pointerdown', () => {
-          let planetName = "Planet " + planetNames[Math.floor(Math.random()*planetNames.length)];
+          let planetName = "Planet " + Phaser.Math.RND.pick(planetNames);
 
           let x_offset = (x === leftPlanetX) ? leftPlanetX - currentPlanetX : rightPlanetX - currentPlanetX;
           let y_offset = (y === leftPlanetY) ? currentPlanetY - leftPlanetY : currentPlanetY - rightPlanetY;
 
           if (planet != this.currentPlanet) {
+            this.planetIndicator.setText(planetName);
+
             this.leftline.destroy();
             this.rightline.destroy();
             (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
