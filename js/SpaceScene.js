@@ -14,6 +14,7 @@ var SpaceScene = new Phaser.Class({
     this.load.image('PlanetIndicator', 'assets/sprites/PlanetIndicator.png');
     this.load.image('ResourcesIndicator', 'assets/sprites/ResourcesIndicator.png');
     this.load.image('SelectionIndicator', 'assets/sprites/SelectionIndicator.png');
+    this.load.image('Background', 'assets/sprites/Background.png');
   },
 
   create: function ()
@@ -27,14 +28,16 @@ var SpaceScene = new Phaser.Class({
     this.cargoCount = 0;
     this.moneyCount = 1500;
 
-    this.currentPlanet, this.leftPlanet, this.rightPlanet, this.leftline, this.rightline;
-    this.playerShip;
+    this.background = this.add.tileSprite(0, 0, 1200, 800, 'Background').setOrigin(0, 0);
+    this.background.depth = -10;
+    this.scrollBackground = false;
 
-    this.playerShip = this.add.sprite(currentPlanetX - 16, currentPlanetY - 16, 'ship').setOrigin(0, 0);
+    this.playerShip = this.add.sprite(currentPlanetX, currentPlanetY, 'ship').setOrigin(0.5);
     this.rotatePlayerShip("rest");
 
-    this.createGalaxy();
     this.currentPlanet = this.generatePlanet(currentPlanetX, currentPlanetY);
+    this.leftPlanet, this.rightPlanet, this.leftline, this.rightline;
+    this.createGalaxy();
 
     this.planetIndicatorBG = this.add.image(0, 0, 'PlanetIndicator').setOrigin(0,0);
   	this.planetIndicator = this.add.text(16, 16,
@@ -59,6 +62,13 @@ var SpaceScene = new Phaser.Class({
     );
   },
 
+  update: function() {
+    if (this.scrollBackground) {
+      this.background.tilePositionX -= 0.2;
+      this.background.tilePositionY -= 0.2;
+    }
+  },
+
   updateIndicator: function() {
     this.fuelIndicator.setText(this.displayFuel());
     this.cargoIndicator.setText(this.displayCargo());
@@ -81,7 +91,12 @@ var SpaceScene = new Phaser.Class({
     const leftAngle = Math.atan2(currentPlanetY - leftPlanetY, leftPlanetX - currentPlanetX) * 180 / Math.PI;
     const rightAngle = Math.atan2(currentPlanetY - rightPlanetY, rightPlanetX - currentPlanetY) * 180 / Math.PI;
     let angle = (position === "rest" ? 0 : (position === "left" ? 90 - leftAngle : 90 - rightAngle));
-    this.playerShip.angle = angle;
+    this.tweens.add({
+      targets: this.playerShip,
+      angle: angle,
+      duration: 1000,
+      repeat: 0,
+    });
     this.playerShip.depth = 10;
   },
 
@@ -119,12 +134,14 @@ var SpaceScene = new Phaser.Class({
         this.rightline.destroy();
         (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
 
+        this.scrollBackground = true;
         this.tweens.add({
           targets: [this.currentPlanet, this.leftPlanet, this.rightPlanet],
           x: "-=" + x_offset,
           y: "+=" + y_offset,
           duration: 1300,
           onComplete: () => {
+            this.scrollBackground = false;
             this.currentPlanet.destroy();
             this.currentPlanet = planet;
             (x === leftPlanetX) ? this.rightPlanet.destroy() : this.leftPlanet.destroy();
@@ -160,17 +177,17 @@ var SpaceScene = new Phaser.Class({
 
     this.selectionBuyFuel = this.add.image(650, 250, 'SelectionIndicator').setOrigin(0,0).setInteractive();
     this.selectionBuyFuelText = this.add.text(670, 265,
-      "Buy fuel (" + fuelAmount + "): $" + fuelAmount * fuelCost, fontConf
+      "Buy fuel ( " + fuelAmount + " ): $ " + fuelAmount * fuelCost, fontConf
     );
 
     this.selectionBuyCargo = this.add.image(650, 350, 'SelectionIndicator').setOrigin(0,0).setInteractive();
     this.selectionBuyCargoText = this.add.text(670, 365,
-      "Buy Cargo (" + buyCargoAmount + "): $" + buyCargoAmount * buyCargoCost, fontConf
+      "Buy Cargo ( " + buyCargoAmount + " ): $ " + buyCargoAmount * buyCargoCost, fontConf
     );
 
     this.selectionSellCargo = this.add.image(650, 450, 'SelectionIndicator').setOrigin(0,0).setInteractive();
     this.selectionSellCargoText = this.add.text(670, 465,
-      "Sell Cargo (" + sellCargoAmount + "): $" + sellCargoAmount * sellCargoCost, fontConf
+      "Sell Cargo ( " + sellCargoAmount + " ): $ " + sellCargoAmount * sellCargoCost, fontConf
     );
 
     this.selectionNothing = this.add.image(650, 550, 'SelectionIndicator').setOrigin(0,0).setInteractive();
@@ -205,7 +222,7 @@ var SpaceScene = new Phaser.Class({
     this.selectionSellCargo.on('pointerdown', () => {
       if (this.cargoCount === 0) {
         this.displaySelectionError("You have nothing to sell!");
-      } else if (this.cargoCount > sellCargoAmount) {
+      } else if (this.cargoCount >= sellCargoAmount) {
         this.cargoCount -= sellCargoAmount;
         this.moneyCount += sellCargoAmount * sellCargoCost;
         this.postScenario();
