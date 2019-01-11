@@ -5,22 +5,26 @@ var StartScene = new Phaser.Class({
     Phaser.Scene.call(this, {key: 'StartScene' });
   },
 
-  create: function ()
-  {
+  preload: function() {
+    this.load.image('SelectionIndicator', 'assets/sprites/SelectionIndicator.png');
+  },
+
+  create: function () {
     var title = this.add.text(600, 300,
       "Space Hopper",
       {fontSize: '80px', fill: '#ffffff'}
     ).setOrigin(0.5);
 
+    var startBox = this.add.image(600, 600, 'SelectionIndicator').setInteractive();
     var startText = this.add.text(600, 600,
       "Start",
-      {fontSize: '40px', fill: '#ffffff'}
+      {fontFamily: 'Orbitron', fontSize: '40px', fill: '#ffffff'}
     ).setOrigin(0.5)
-    
-    startText.setInteractive();
 
-    startText.on('pointerdown', () => {
+    startBox.on('pointerdown', () => {
       title.destroy();
+      startBox.destroy();
+      startText.destroy();
       this.showPrologue();
     });
   },
@@ -45,14 +49,13 @@ var StartScene = new Phaser.Class({
       {fontSize: '28px', fill: '#ffffff'}
     );
 
+    var startBox = this.add.image(600, 600, 'SelectionIndicator').setInteractive();
     var startText = this.add.text(600, 600,
       "Start",
-      {fontSize: '40px', fill: '#ffffff'}
+      {fontFamily: 'Orbitron', fontSize: '40px', fill: '#ffffff'}
     ).setOrigin(0.5)
 
-    startText.setInteractive();
-
-    startText.on('pointerdown', () => {
+    startBox.on('pointerdown', () => {
       this.scene.stop('StartScene');
       this.scene.start('SpaceScene');
     });

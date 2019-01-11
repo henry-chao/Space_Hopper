@@ -45,26 +45,27 @@ var SpaceScene = new Phaser.Class({
 	  	{fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
   	);
 
-    this.fuelIndicatorBG = this.add.image(20, 735, 'ResourcesIndicator').setOrigin(0,0);
+    this.fuelIndicatorBG = this.add.image(20, 735, 'ResourcesIndicator').setOrigin(0,0).setDepth(5);
     this.fuelIndicator = this.add.text(40, 750,
       this.displayFuel(),
       {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
-    );
-    this.cargoIndicatorBG = this.add.image(290, 735, 'ResourcesIndicator').setOrigin(0,0);
+    ).setDepth(6);
+
+    this.cargoIndicatorBG = this.add.image(290, 735, 'ResourcesIndicator').setOrigin(0,0).setDepth(5);
     this.cargoIndicator = this.add.text(310, 750,
       this.displayCargo(),
       {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
-    );
-    this.cargoIndicatorBG = this.add.image(560, 735, 'ResourcesIndicator').setOrigin(0,0);
+    ).setDepth(6);
+    this.cargoIndicatorBG = this.add.image(560, 735, 'ResourcesIndicator').setOrigin(0,0).setDepth(5);
     this.moneyIndicator = this.add.text(580, 750,
       this.displayMoney(),
       {fontFamily: 'Orbitron', fontSize: '24px', fill: '#ffffff'}
-    );
+    ).setDepth(6);
   },
 
   update: function() {
     if (this.scrollBackground) {
-      this.background.tilePositionX -= 0.2;
+      this.background.tilePositionX += 0.2;
       this.background.tilePositionY -= 0.2;
     }
   },
@@ -94,7 +95,7 @@ var SpaceScene = new Phaser.Class({
     this.tweens.add({
       targets: this.playerShip,
       angle: angle,
-      duration: 1000,
+      duration: shipTurnSpeed,
       repeat: 0,
     });
     this.playerShip.depth = 10;
@@ -125,6 +126,7 @@ var SpaceScene = new Phaser.Class({
       let y_offset = (y === leftPlanetY) ? currentPlanetY - leftPlanetY : currentPlanetY - rightPlanetY;
 
       if (planet != this.currentPlanet) {
+        (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
         this.planetIndicator.setText(planetName);
 
         this.fuelCount -= 1;
@@ -132,19 +134,20 @@ var SpaceScene = new Phaser.Class({
 
         this.leftline.destroy();
         this.rightline.destroy();
-        (x === leftPlanetX) ? this.rotatePlayerShip("left") : this.rotatePlayerShip("right");
 
         this.scrollBackground = true;
         this.tweens.add({
           targets: [this.currentPlanet, this.leftPlanet, this.rightPlanet],
           x: "-=" + x_offset,
           y: "+=" + y_offset,
+          delay: shipTurnSpeed,
           duration: 1300,
           onComplete: () => {
             this.scrollBackground = false;
             this.currentPlanet.destroy();
             this.currentPlanet = planet;
             (x === leftPlanetX) ? this.rightPlanet.destroy() : this.leftPlanet.destroy();
+            this.rotatePlayerShip("rest");
             this.planetScenario();
           },
         });
@@ -259,7 +262,6 @@ var SpaceScene = new Phaser.Class({
       this.selectionNothingText.destroy();
       this.selectionError.destroy();
       this.createGalaxy();
-      this.rotatePlayerShip("rest");
     }
   },
 });
